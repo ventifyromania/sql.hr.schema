@@ -1,0 +1,4 @@
+SELECT d.department_name
+FROM hr.departments d
+LEFT JOIN hr.employees m ON m.employee_id = d.manager_id
+WHERE d.manager_id IS NULL;
