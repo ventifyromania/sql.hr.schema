@@ -1,0 +1,42 @@
+--1.
+SELECT e.first_name, e.last_name, j.job_title
+FROM hr.employees e
+JOIN hr.jobs j ON j.job_id = e.job_id
+WHERE (e.department_id, e.job_id) IN (
+  SELECT department_id, job_id
+  FROM hr.employees
+  GROUP BY department_id, job_id
+  HAVING COUNT(*) = 1
+);
+
+--2.
+SELECT d.department_name
+FROM hr.departments d
+LEFT JOIN hr.employees m ON m.employee_id = d.manager_id
+WHERE d.manager_id IS NULL;
+
+--3.
+SELECT NVL(TO_CHAR(d.location_id), 'TOTAL') AS location_id,
+       MIN(e.salary) AS min_sal,
+       MAX(e.salary) AS max_sal
+FROM hr.employees e
+JOIN hr.departments d ON d.department_id = e.department_id
+GROUP BY ROLLUP(d.location_id);
+
+--4.
+SELECT department_id, first_name, last_name, salary,
+       RANK()       OVER (PARTITION BY department_id ORDER BY salary DESC) AS rnk,
+       DENSE_RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS drnk
+FROM hr.employees
+WHERE salary BETWEEN 8000 AND 15000
+ORDER BY department_id, salary DESC;
+
+--5.
+SELECT e.first_name, e.last_name,
+       LEVEL AS nivel,
+       (SELECT m.first_name || ' ' || m.last_name
+        FROM hr.employees m
+        WHERE m.employee_id = e.manager_id) AS manager_direct
+FROM hr.employees e
+START WITH e.manager_id = 108
+CONNECT BY PRIOR e.employee_id = e.manager_id;
