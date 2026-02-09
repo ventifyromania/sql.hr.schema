@@ -1,0 +1,54 @@
+--1.
+SELECT e.last_name, e.first_name,
+       CASE r.region_id
+         WHEN 1 THEN 'Europa'
+         WHEN 2 THEN 'America'
+         WHEN 3 THEN 'Asia+Australia'
+         WHEN 4 THEN 'Africa'
+       END continent
+FROM employees e
+JOIN departments d ON d.department_id = e.department_id
+JOIN locations  l ON l.location_id   = d.location_id
+JOIN countries  c ON c.country_id    = l.country_id
+JOIN regions    r ON r.region_id     = c.region_id;
+
+--2. 
+SELECT d.department_name
+FROM departments d
+WHERE NOT EXISTS (
+  SELECT 1 FROM employees e
+  WHERE e.department_id = d.department_id
+);
+
+SELECT department_name
+FROM departments
+WHERE department_id NOT IN (SELECT department_id FROM employees);
+
+
+--3.
+SELECT *
+FROM employees
+WHERE department_id IN (
+  SELECT department_id
+  FROM employees
+  GROUP BY department_id
+  HAVING COUNT(*) > 10
+);
+
+
+--4.
+SELECT NVL(TO_CHAR(department_id),'TOTAL') dept,
+       COUNT(*) nr
+FROM employees
+GROUP BY ROLLUP(department_id);
+
+--5.
+SELECT s.*
+FROM employees s, employees m
+WHERE s.manager_id = m.employee_id
+  AND m.employee_id = 109;
+
+SELECT *
+FROM employees
+WHERE manager_id = 109;
+
