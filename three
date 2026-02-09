@@ -1,0 +1,70 @@
+--1.
+SELECT *
+FROM employees
+WHERE department_id NOT IN (
+  SELECT department_id
+  FROM employees
+  GROUP BY department_id
+  HAVING COUNT(*) <= 10
+);
+
+SELECT e.*
+FROM employees e
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM employees x
+  WHERE x.department_id = e.department_id
+  GROUP BY x.department_id
+  HAVING COUNT(*) <= 10
+);
+
+
+--2.
+SELECT NVL(d.department_name, 'TOTAL') AS department_name,
+       COUNT(e.employee_id) AS nr_angajati
+FROM departments d
+LEFT JOIN employees e ON e.department_id = d.department_id
+GROUP BY ROLLUP(d.department_name);
+
+--3.
+SELECT l.city,
+       e.first_name, e.last_name,
+       e.salary,
+       DENSE_RANK() OVER (PARTITION BY l.city ORDER BY e.salary DESC) AS loc
+FROM employees e
+JOIN departments d ON d.department_id = e.department_id
+JOIN locations  l ON l.location_id   = d.location_id
+ORDER BY l.city, loc;
+
+
+--4.
+SELECT COUNT(*) AS nr
+FROM employees s2, employees s1
+WHERE s2.manager_id = s1.employee_id
+  AND s1.manager_id = (SELECT employee_id
+                       FROM employees
+                       WHERE first_name='Bruce' AND last_name='Ernst');
+
+SELECT COUNT(*) AS nr
+FROM employees
+WHERE manager_id IN (
+  SELECT employee_id
+  FROM employees
+  WHERE manager_id = (SELECT employee_id
+                      FROM employees
+                      WHERE first_name='Bruce' AND last_name='Ernst')
+);
+
+SELECT COUNT(*) AS nr
+FROM employees
+WHERE employee_id IN (
+  SELECT employee_id
+  FROM employees
+  START WITH first_name='Bruce' AND last_name='Ernst'
+  CONNECT BY PRIOR employee_id = manager_id
+)
+AND LEVEL = 3;
+
+
+--5.
+
