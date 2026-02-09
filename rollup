@@ -1,0 +1,6 @@
+SELECT NVL(TO_CHAR(d.location_id), 'TOTAL') AS location_id,
+       MIN(e.salary) AS min_sal,
+       MAX(e.salary) AS max_sal
+FROM hr.employees e
+JOIN hr.departments d ON d.department_id = e.department_id
+GROUP BY ROLLUP(d.location_id);
