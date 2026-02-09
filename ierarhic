@@ -1,0 +1,8 @@
+SELECT e.first_name, e.last_name,
+       LEVEL AS nivel,
+       (SELECT m.first_name || ' ' || m.last_name
+        FROM hr.employees m
+        WHERE m.employee_id = e.manager_id) AS manager_direct
+FROM hr.employees e
+START WITH e.manager_id = 108
+CONNECT BY PRIOR e.employee_id = e.manager_id;
