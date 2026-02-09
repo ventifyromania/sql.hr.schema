@@ -1,0 +1,47 @@
+--1.
+SELECT NVL(m.first_name, 'Fara manager') manager,
+       d.department_name,
+       l.city
+FROM departments d
+JOIN locations l ON l.location_id = d.location_id
+LEFT JOIN employees m ON m.employee_id = d.manager_id;
+
+--2. 
+SELECT d.department_name
+FROM departments d
+LEFT JOIN employees e ON e.department_id = d.department_id
+WHERE e.employee_id IS NULL;
+
+--3.
+SELECT NVL(d.department_name,'TOTAL') dept,
+       NVL(m.first_name,'Fara manager') manager,
+       COUNT(e.employee_id) nr
+FROM departments d
+LEFT JOIN employees e ON e.department_id = d.department_id
+LEFT JOIN employees m ON m.employee_id = d.manager_id
+GROUP BY ROLLUP(d.department_name, m.first_name);
+
+--4.
+SELECT employee_id, first_name, last_name
+FROM employees
+WHERE employee_id IN (
+  SELECT employee_id
+  FROM employees
+  START WITH employee_id = 109
+  CONNECT BY PRIOR employee_id = manager_id
+)
+AND LEVEL = 3;
+
+--5.
+CREATE OR REPLACE PROCEDURE SUMA IS
+  x NUMBER;
+BEGIN
+  SELECT SUM(salary) INTO x FROM employees;
+  DBMS_OUTPUT.PUT_LINE(x);
+END;
+/
+
+BEGIN
+  SUMA;
+END;
+/
